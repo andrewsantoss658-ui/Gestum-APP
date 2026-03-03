@@ -8,7 +8,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Wifi } from "lucide-react";
-import logoGestum from "@/assets/logo_gestum.jpg";
+import logoGestum from "@/assets/logo_gestum_new.png";
 import { formatCpfCnpj } from "@/lib/validators";
 
 const Login = () => {

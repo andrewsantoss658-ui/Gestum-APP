@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { supabase } from "@/integrations/supabase/client";
+import logoGestum from "@/assets/logo_gestum_new.png";
 import {
   LayoutDashboard,
   Package,
@@ -89,9 +90,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shrink-0">
-            <Package className="w-6 h-6 text-primary-foreground" />
-          </div>
+          <img src={logoGestum} alt="GESTUM" className="w-10 h-10 rounded-lg shrink-0 object-contain" />
           {open && (
             <div>
               <h1 className="text-xl font-bold text-foreground">GESTUM</h1>
