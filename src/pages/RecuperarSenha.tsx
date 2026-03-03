@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Package, ArrowLeft } from "lucide-react";
 import { formatCpfCnpj, validateCpfCnpj } from "@/lib/validators";
-import logoGestum from "@/assets/logo_gestum.jpg";
+import logoGestum from "@/assets/logo_gestum_new.png";
 
 const RecuperarSenha = () => {
   const navigate = useNavigate();
