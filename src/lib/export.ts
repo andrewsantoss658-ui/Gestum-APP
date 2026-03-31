@@ -1,7 +1,29 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
 import { Sale, Product, Expense, CashFlowEntry } from "./storage";
+
+// Utilitário para converter array 2D em CSV e fazer download
+const downloadCSV = (data: (string | number)[][], filename: string) => {
+  const csvContent = data
+    .map(row =>
+      row.map(cell => {
+        const str = String(cell ?? "");
+        return str.includes(",") || str.includes('"') || str.includes("\n")
+          ? `"${str.replace(/"/g, '""')}"`
+          : str;
+      }).join(",")
+    )
+    .join("\n");
+
+  const BOM = "\uFEFF";
+  const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+};
 
 // Exportar relatório financeiro em PDF
 export const exportFinancialReportPDF = (
@@ -11,7 +33,6 @@ export const exportFinancialReportPDF = (
 ) => {
   const doc = new jsPDF();
   
-  // Título
   doc.setFontSize(18);
   doc.text("Relatório Financeiro - GESTUM", 14, 20);
   
@@ -19,7 +40,6 @@ export const exportFinancialReportPDF = (
   doc.text(`Período: ${period}`, 14, 28);
   doc.text(`Data de geração: ${new Date().toLocaleDateString("pt-BR")}`, 14, 34);
   
-  // Resumo financeiro
   const totalReceitas = sales.reduce((sum, sale) => sum + sale.total, 0);
   const totalDespesas = expenses
     .filter(e => e.status === "paid")
@@ -33,7 +53,6 @@ export const exportFinancialReportPDF = (
   doc.text(`Total de Despesas: R$ ${totalDespesas.toFixed(2)}`, 14, 58);
   doc.text(`Lucro Líquido: R$ ${lucro.toFixed(2)}`, 14, 64);
   
-  // Tabela de vendas
   doc.setFontSize(12);
   doc.text("Vendas Recentes", 14, 75);
   
@@ -50,26 +69,22 @@ export const exportFinancialReportPDF = (
     body: salesData,
   });
   
-  // Salvar PDF
   doc.save(`relatorio-financeiro-${new Date().getTime()}.pdf`);
 };
 
-// Exportar relatório financeiro em Excel
+// Exportar relatório financeiro em CSV (substitui Excel)
 export const exportFinancialReportExcel = (
   sales: Sale[],
   expenses: Expense[],
   period: string
 ) => {
-  const wb = XLSX.utils.book_new();
-  
-  // Resumo
   const totalReceitas = sales.reduce((sum, sale) => sum + sale.total, 0);
   const totalDespesas = expenses
     .filter(e => e.status === "paid")
     .reduce((sum, exp) => sum + exp.amount, 0);
   const lucro = totalReceitas - totalDespesas;
-  
-  const resumoData = [
+
+  const data: (string | number)[][] = [
     ["Relatório Financeiro - GESTUM"],
     [`Período: ${period}`],
     [`Data: ${new Date().toLocaleDateString("pt-BR")}`],
@@ -81,22 +96,13 @@ export const exportFinancialReportExcel = (
     [],
     ["Vendas"],
     ["Data", "Valor", "Forma de Pagamento", "Status"],
-  ];
-  
-  const salesData = sales.map(sale => [
-    new Date(sale.date).toLocaleDateString("pt-BR"),
-    sale.total,
-    sale.paymentMethod,
-    sale.status === "completed" ? "Concluída" : "Pendente",
-  ]);
-  
-  const wsData = [...resumoData, ...salesData];
-  const ws = XLSX.utils.aoa_to_sheet(wsData);
-  
-  XLSX.utils.book_append_sheet(wb, ws, "Relatório Financeiro");
-  
-  // Aba de despesas
-  const expensesData = [
+    ...sales.map(sale => [
+      new Date(sale.date).toLocaleDateString("pt-BR"),
+      sale.total,
+      sale.paymentMethod,
+      sale.status === "completed" ? "Concluída" : "Pendente",
+    ]),
+    [],
     ["Despesas"],
     ["Nome", "Valor", "Vencimento", "Status", "Categoria"],
     ...expenses.map(exp => [
@@ -107,12 +113,8 @@ export const exportFinancialReportExcel = (
       exp.category,
     ]),
   ];
-  
-  const wsExpenses = XLSX.utils.aoa_to_sheet(expensesData);
-  XLSX.utils.book_append_sheet(wb, wsExpenses, "Despesas");
-  
-  // Salvar Excel
-  XLSX.writeFile(wb, `relatorio-financeiro-${new Date().getTime()}.xlsx`);
+
+  downloadCSV(data, `relatorio-financeiro-${new Date().getTime()}.csv`);
 };
 
 // Calcular previsão de estoque
