@@ -2,65 +2,86 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getSales } from "@/lib/storage";
+import { supabase } from "@/integrations/supabase/client";
 import { hasCompletedOnboarding } from "@/lib/onboarding";
 import { ShoppingCart, Package, FileText, Plus, Users, Receipt, Wallet } from "lucide-react";
-import { toast } from "sonner";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [todaySales, setTodaySales] = useState(0);
   const [last7DaysSales, setLast7DaysSales] = useState<number[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Redirecionar para onboarding se não foi completado
     if (!hasCompletedOnboarding()) {
       navigate("/onboarding", { replace: true });
       return;
     }
-
-    const sales = getSales();
-    const today = new Date().toDateString();
-    
-    // Vendas de hoje
-    const todayTotal = sales
-      .filter(sale => new Date(sale.date).toDateString() === today)
-      .reduce((sum, sale) => sum + sale.total, 0);
-    
-    setTodaySales(todayTotal);
-
-    // Últimos 7 dias
-    const last7Days = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (6 - i));
-      return date.toDateString();
-    });
-
-    const salesByDay = last7Days.map(day =>
-      sales
-        .filter(sale => new Date(sale.date).toDateString() === day)
-        .reduce((sum, sale) => sum + sale.total, 0)
-    );
-
-    setLast7DaysSales(salesByDay);
+    loadSalesData();
   }, [navigate]);
+
+  const loadSalesData = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const { data: sales, error } = await supabase
+        .from("sales")
+        .select("total, date, status")
+        .eq("user_id", user.id)
+        .gte("date", sevenDaysAgo.toISOString())
+        .eq("status", "completed");
+
+      if (error) throw error;
+
+      const today = new Date().toDateString();
+      const todayTotal = (sales || [])
+        .filter(s => new Date(s.date).toDateString() === today)
+        .reduce((sum, s) => sum + Number(s.total), 0);
+      setTodaySales(todayTotal);
+
+      const last7Days = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        return d.toDateString();
+      });
+
+      const salesByDay = last7Days.map(day =>
+        (sales || [])
+          .filter(s => new Date(s.date).toDateString() === day)
+          .reduce((sum, s) => sum + Number(s.total), 0)
+      );
+      setLast7DaysSales(salesByDay);
+    } catch (err) {
+      console.error("Erro ao carregar dados do dashboard:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Carregando...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-        {/* Resumo do dia */}
         <Card className="bg-primary text-primary-foreground">
           <CardHeader>
             <CardTitle className="text-lg font-medium">Vendas de Hoje</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold">
-              R$ {todaySales.toFixed(2)}
-            </p>
+            <p className="text-4xl font-bold">R$ {todaySales.toFixed(2)}</p>
           </CardContent>
         </Card>
 
-        {/* Gráfico simples */}
         <Card>
           <CardHeader>
             <CardTitle>Últimos 7 dias</CardTitle>
@@ -86,10 +107,8 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Ações rápidas */}
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">Ações Rápidas</h2>
-          
           <Button
             size="xl"
             className="w-full justify-start text-left h-auto py-6"
@@ -103,54 +122,26 @@ const Dashboard = () => {
           </Button>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Button
-              variant="outline"
-              size="lg"
-              className="justify-start h-auto py-4"
-              onClick={() => navigate("/estoque")}
-            >
+            <Button variant="outline" size="lg" className="justify-start h-auto py-4" onClick={() => navigate("/estoque")}>
               <Package className="w-5 h-5 mr-3" />
               <span>Ver Estoque</span>
             </Button>
-
-            <Button
-              variant="outline"
-              size="lg"
-              className="justify-start h-auto py-4"
-              onClick={() => navigate("/relatorios")}
-            >
+            <Button variant="outline" size="lg" className="justify-start h-auto py-4" onClick={() => navigate("/relatorios")}>
               <FileText className="w-5 h-5 mr-3" />
               <span>Ver Relatórios</span>
             </Button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
-            <Button
-              variant="secondary"
-              size="lg"
-              className="justify-start h-auto py-4"
-              onClick={() => navigate("/caderneta")}
-            >
+            <Button variant="secondary" size="lg" className="justify-start h-auto py-4" onClick={() => navigate("/caderneta")}>
               <Users className="w-5 h-5 mr-3" />
               <span>Caderneta Digital</span>
             </Button>
-
-            <Button
-              variant="secondary"
-              size="lg"
-              className="justify-start h-auto py-4"
-              onClick={() => navigate("/contas-pagar")}
-            >
+            <Button variant="secondary" size="lg" className="justify-start h-auto py-4" onClick={() => navigate("/contas-pagar")}>
               <Receipt className="w-5 h-5 mr-3" />
               <span>Contas a Pagar</span>
             </Button>
-
-            <Button
-              variant="secondary"
-              size="lg"
-              className="justify-start h-auto py-4"
-              onClick={() => navigate("/fluxo-caixa")}
-            >
+            <Button variant="secondary" size="lg" className="justify-start h-auto py-4" onClick={() => navigate("/fluxo-caixa")}>
               <Wallet className="w-5 h-5 mr-3" />
               <span>Fluxo de Caixa</span>
             </Button>

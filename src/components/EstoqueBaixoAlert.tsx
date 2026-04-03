@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, X } from "lucide-react";
-import { getProducts } from "@/lib/storage";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function EstoqueBaixoAlert() {
   const navigate = useNavigate();
@@ -14,13 +14,26 @@ export default function EstoqueBaixoAlert() {
     checkLowStock();
   }, []);
 
-  const checkLowStock = () => {
-    const products = getProducts();
-    const criticalProducts = products.filter(p => p.quantity <= 10);
-    
-    if (criticalProducts.length > 0) {
-      setLowStockProducts(criticalProducts.map(p => ({ name: p.name, quantity: p.quantity })));
-      setVisible(true);
+  const checkLowStock = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("products")
+        .select("name, quantity")
+        .eq("user_id", user.id)
+        .lte("quantity", 10)
+        .order("quantity", { ascending: true });
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        setLowStockProducts(data);
+        setVisible(true);
+      }
+    } catch (err) {
+      console.error("Erro ao verificar estoque:", err);
     }
   };
 
@@ -30,12 +43,7 @@ export default function EstoqueBaixoAlert() {
     <div className="p-6">
       <Card className="border-warning bg-warning/5">
         <CardHeader className="relative pb-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute -top-2 -right-2 h-8 w-8"
-            onClick={() => setVisible(false)}
-          >
+          <Button variant="ghost" size="icon" className="absolute -top-2 -right-2 h-8 w-8" onClick={() => setVisible(false)}>
             <X className="h-4 w-4" />
           </Button>
           <div className="flex items-center gap-3">
@@ -46,21 +54,13 @@ export default function EstoqueBaixoAlert() {
           </div>
         </CardHeader>
         <CardContent className="space-y-2">
-          <p className="text-sm text-muted-foreground mb-3">
-            Clique em um produto para gerenciar o estoque:
-          </p>
+          <p className="text-sm text-muted-foreground mb-3">Clique em um produto para gerenciar o estoque:</p>
           <div className="space-y-2">
             {lowStockProducts.map((product, index) => (
-              <Card
-                key={index}
-                className="cursor-pointer hover:bg-accent transition-colors border-warning/30"
-                onClick={() => navigate("/estoque")}
-              >
+              <Card key={index} className="cursor-pointer hover:bg-accent transition-colors border-warning/30" onClick={() => navigate("/estoque")}>
                 <CardContent className="p-3 flex items-center justify-between">
                   <span className="font-medium">{product.name}</span>
-                  <span className="text-sm text-warning font-semibold">
-                    {product.quantity} unid.
-                  </span>
+                  <span className="text-sm text-warning font-semibold">{product.quantity} unid.</span>
                 </CardContent>
               </Card>
             ))}

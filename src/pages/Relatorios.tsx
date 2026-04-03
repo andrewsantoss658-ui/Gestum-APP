@@ -3,103 +3,171 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getSales, getProducts, getExpenses } from "@/lib/storage";
+import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, TrendingUp, ShoppingBag, DollarSign, Download, FileSpreadsheet } from "lucide-react";
 import { exportFinancialReportPDF, exportFinancialReportExcel } from "@/lib/export";
 import { toast } from "sonner";
 
+interface SaleRow {
+  id: string;
+  date: string;
+  total: number;
+  payment_method: string;
+  status: string;
+}
+
+interface SaleItemRow {
+  product_id: string;
+  product_name: string;
+  quantity: number;
+}
+
+interface ExpenseRow {
+  id: string;
+  name: string;
+  amount: number;
+  due_date: string;
+  status: string;
+  category: string;
+}
+
 const Relatorios = () => {
   const navigate = useNavigate();
   const [period, setPeriod] = useState("7");
+  const [loading, setLoading] = useState(true);
+  const [sales, setSales] = useState<SaleRow[]>([]);
+  const [saleItems, setSaleItems] = useState<SaleItemRow[]>([]);
+  const [expenses, setExpenses] = useState<ExpenseRow[]>([]);
   const [stats, setStats] = useState({
     total: 0,
     average: 0,
     topProduct: { name: "N/A", sales: 0 },
-    recentSales: [] as any[],
+    recentSales: [] as SaleRow[],
   });
 
   useEffect(() => {
-    calculateStats();
+    loadData();
   }, [period]);
 
-  const calculateStats = () => {
-    const sales = getSales();
-    const products = getProducts();
-    const days = parseInt(period);
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - days);
+  const loadData = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    const filteredSales = sales.filter(
-      sale => new Date(sale.date) >= cutoffDate
-    );
+      const days = parseInt(period);
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - days);
 
-    const total = filteredSales.reduce((sum, sale) => sum + sale.total, 0);
-    const average = filteredSales.length > 0 ? total / days : 0;
+      const [salesRes, itemsRes, expensesRes] = await Promise.all([
+        supabase
+          .from("sales")
+          .select("id, date, total, payment_method, status")
+          .eq("user_id", user.id)
+          .gte("date", cutoffDate.toISOString())
+          .order("date", { ascending: false }),
+        supabase
+          .from("sale_items")
+          .select("product_id, product_name, quantity, sale:sales!inner(date, user_id)")
+          .eq("sale.user_id", user.id)
+          .gte("sale.date", cutoffDate.toISOString()),
+        supabase
+          .from("expenses")
+          .select("id, name, amount, due_date, status, category")
+          .eq("user_id", user.id),
+      ]);
 
-    // Produto mais vendido
-    const productSales: { [key: string]: number } = {};
-    filteredSales.forEach(sale => {
-      sale.items.forEach(item => {
-        productSales[item.productId] = (productSales[item.productId] || 0) + item.quantity;
+      const salesData = salesRes.data || [];
+      const itemsData = (itemsRes.data || []) as SaleItemRow[];
+      const expensesData = expensesRes.data || [];
+
+      setSales(salesData);
+      setSaleItems(itemsData);
+      setExpenses(expensesData);
+
+      // Calculate stats
+      const total = salesData.reduce((sum, s) => sum + Number(s.total), 0);
+      const average = salesData.length > 0 ? total / days : 0;
+
+      // Top product
+      const productSales: Record<string, { name: string; qty: number }> = {};
+      itemsData.forEach(item => {
+        if (!productSales[item.product_id]) {
+          productSales[item.product_id] = { name: item.product_name, qty: 0 };
+        }
+        productSales[item.product_id].qty += item.quantity;
       });
-    });
 
-    const topProductId = Object.keys(productSales).reduce((a, b) =>
-      productSales[a] > productSales[b] ? a : b,
-      ""
-    );
+      let topProduct = { name: "N/A", sales: 0 };
+      Object.values(productSales).forEach(p => {
+        if (p.qty > topProduct.sales) topProduct = { name: p.name, sales: p.qty };
+      });
 
-    const topProduct = topProductId
-      ? products.find(p => p.id === topProductId)
-      : null;
-
-    setStats({
-      total,
-      average,
-      topProduct: topProduct
-        ? { name: topProduct.name, sales: productSales[topProductId] }
-        : { name: "N/A", sales: 0 },
-      recentSales: filteredSales.slice(-10).reverse(),
-    });
+      setStats({
+        total,
+        average,
+        topProduct,
+        recentSales: salesData.slice(0, 10),
+      });
+    } catch (err) {
+      console.error("Erro ao carregar relatórios:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleExportPDF = () => {
-    const sales = getSales();
-    const expenses = getExpenses();
-    const days = parseInt(period);
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - days);
-    
-    const filteredSales = sales.filter(
-      sale => new Date(sale.date) >= cutoffDate
-    );
-    
-    const periodText = period === "7" ? "Últimos 7 dias" : 
-                       period === "15" ? "Últimos 15 dias" : 
-                       "Últimos 30 dias";
-    
-    exportFinancialReportPDF(filteredSales, expenses, periodText);
+    const periodText = period === "7" ? "Últimos 7 dias" : period === "15" ? "Últimos 15 dias" : "Últimos 30 dias";
+    const mappedSales = sales.map(s => ({
+      id: s.id,
+      date: s.date,
+      total: s.total,
+      paymentMethod: s.payment_method as any,
+      status: s.status as any,
+      items: [],
+    }));
+    const mappedExpenses = expenses.map(e => ({
+      id: e.id,
+      name: e.name,
+      amount: e.amount,
+      dueDate: e.due_date,
+      status: e.status as any,
+      category: e.category,
+      createdAt: "",
+    }));
+    exportFinancialReportPDF(mappedSales, mappedExpenses, periodText);
     toast.success("Relatório em PDF exportado com sucesso!");
   };
 
   const handleExportExcel = () => {
-    const sales = getSales();
-    const expenses = getExpenses();
-    const days = parseInt(period);
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - days);
-    
-    const filteredSales = sales.filter(
-      sale => new Date(sale.date) >= cutoffDate
-    );
-    
-    const periodText = period === "7" ? "Últimos 7 dias" : 
-                       period === "15" ? "Últimos 15 dias" : 
-                       "Últimos 30 dias";
-    
-    exportFinancialReportExcel(filteredSales, expenses, periodText);
-    toast.success("Relatório em Excel exportado com sucesso!");
+    const periodText = period === "7" ? "Últimos 7 dias" : period === "15" ? "Últimos 15 dias" : "Últimos 30 dias";
+    const mappedSales = sales.map(s => ({
+      id: s.id,
+      date: s.date,
+      total: s.total,
+      paymentMethod: s.payment_method as any,
+      status: s.status as any,
+      items: [],
+    }));
+    const mappedExpenses = expenses.map(e => ({
+      id: e.id,
+      name: e.name,
+      amount: e.amount,
+      dueDate: e.due_date,
+      status: e.status as any,
+      category: e.category,
+      createdAt: "",
+    }));
+    exportFinancialReportExcel(mappedSales, mappedExpenses, periodText);
+    toast.success("Relatório em CSV exportado com sucesso!");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -118,7 +186,7 @@ const Relatorios = () => {
             </Button>
             <Button variant="outline" size="sm" onClick={handleExportExcel}>
               <FileSpreadsheet className="w-4 h-4 mr-2" />
-              Excel
+              CSV
             </Button>
           </div>
         </div>
@@ -151,9 +219,7 @@ const Relatorios = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">R$ {stats.total.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Últimos {period} dias
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">Últimos {period} dias</p>
             </CardContent>
           </Card>
 
@@ -164,9 +230,7 @@ const Relatorios = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">R$ {stats.average.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Por dia
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">Por dia</p>
             </CardContent>
           </Card>
 
@@ -177,9 +241,7 @@ const Relatorios = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold truncate">{stats.topProduct.name}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stats.topProduct.sales} unidades
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">{stats.topProduct.sales} unidades</p>
             </CardContent>
           </Card>
         </div>
@@ -190,26 +252,17 @@ const Relatorios = () => {
           </CardHeader>
           <CardContent>
             {stats.recentSales.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                Nenhuma venda no período
-              </p>
+              <p className="text-center text-muted-foreground py-8">Nenhuma venda no período</p>
             ) : (
               <div className="space-y-3">
                 {stats.recentSales.map(sale => (
-                  <div
-                    key={sale.id}
-                    className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
-                  >
+                  <div key={sale.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                     <div>
-                      <p className="font-medium">R$ {sale.total.toFixed(2)}</p>
+                      <p className="font-medium">R$ {Number(sale.total).toFixed(2)}</p>
                       <p className="text-sm text-muted-foreground">
-                        {new Date(sale.date).toLocaleDateString()} -{" "}
-                        {sale.paymentMethod.charAt(0).toUpperCase() + sale.paymentMethod.slice(1)}
+                        {new Date(sale.date).toLocaleDateString("pt-BR")} - {sale.payment_method.charAt(0).toUpperCase() + sale.payment_method.slice(1)}
                       </p>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {sale.items.length} item(ns)
-                    </p>
                   </div>
                 ))}
               </div>
