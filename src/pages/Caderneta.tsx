@@ -4,69 +4,96 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Search, Plus, User } from "lucide-react";
-import { getClients, type Client } from "@/lib/storage";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { saveClient } from "@/lib/storage";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+
+interface Client {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  balance: number;
+  created_at: string;
+}
 
 export default function Caderneta() {
   const navigate = useNavigate();
   const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newClient, setNewClient] = useState({
-    name: "",
-    phone: "",
-    email: "",
-  });
+  const [newClient, setNewClient] = useState({ name: "", phone: "", email: "" });
 
   useEffect(() => {
     loadClients();
   }, []);
 
-  const loadClients = () => {
-    setClients(getClients());
+  const loadClients = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("clients")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("name");
+
+      if (error) throw error;
+      setClients(data || []);
+    } catch (err) {
+      console.error("Erro ao carregar clientes:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddClient = () => {
+  const handleAddClient = async () => {
     if (!newClient.name) {
-      toast({
-        title: "Erro",
-        description: "Nome do cliente é obrigatório",
-        variant: "destructive",
-      });
+      toast({ title: "Erro", description: "Nome do cliente é obrigatório", variant: "destructive" });
       return;
     }
 
-    const client: Client = {
-      id: Date.now().toString(),
-      name: newClient.name,
-      phone: newClient.phone,
-      email: newClient.email,
-      balance: 0,
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: "Erro", description: "Usuário não autenticado", variant: "destructive" });
+        return;
+      }
 
-    saveClient(client);
-    loadClients();
-    setIsDialogOpen(false);
-    setNewClient({ name: "", phone: "", email: "" });
-    toast({
-      title: "Cliente adicionado",
-      description: "Cliente cadastrado com sucesso",
-    });
+      const { error } = await supabase.from("clients").insert({
+        user_id: user.id,
+        name: newClient.name,
+        phone: newClient.phone || null,
+        email: newClient.email || null,
+        balance: 0,
+      });
+
+      if (error) throw error;
+
+      toast({ title: "Cliente adicionado", description: "Cliente cadastrado com sucesso" });
+      setIsDialogOpen(false);
+      setNewClient({ name: "", phone: "", email: "" });
+      loadClients();
+    } catch (err) {
+      console.error("Erro ao adicionar cliente:", err);
+      toast({ title: "Erro", description: "Erro ao cadastrar cliente", variant: "destructive" });
+    }
   };
 
-  const generateColorCode = (id: string) => {
-    const colors = ["#343A40", "#007BFF", "#28A745", "#FFC107"];
-    const index = parseInt(id) % colors.length;
-    return colors[index];
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -89,16 +116,10 @@ export default function Caderneta() {
 
         <div className="space-y-3 mb-20">
           {filteredClients.map((client) => (
-            <Card
-              key={client.id}
-              className="cursor-pointer hover:bg-accent transition-colors"
-              onClick={() => navigate(`/caderneta/${client.id}`)}
-            >
+            <Card key={client.id} className="cursor-pointer hover:bg-accent transition-colors">
               <CardContent className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    client.balance > 0 ? 'bg-warning/20' : 'bg-muted'
-                  }`}>
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${client.balance > 0 ? 'bg-warning/20' : 'bg-muted'}`}>
                     <User className="h-6 w-6 text-foreground" />
                   </div>
                   <div>
@@ -110,7 +131,7 @@ export default function Caderneta() {
                     )}
                   </div>
                 </div>
-                <span className="text-lg font-mono" style={{ color: generateColorCode(client.id) }}>
+                <span className="text-lg font-mono text-muted-foreground">
                   #{client.id.slice(-6).toUpperCase()}
                 </span>
               </CardContent>
@@ -120,10 +141,7 @@ export default function Caderneta() {
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button
-              size="lg"
-              className="fixed bottom-6 right-6 h-16 w-auto px-8 rounded-full shadow-lg"
-            >
+            <Button size="lg" className="fixed bottom-6 right-6 h-16 w-auto px-8 rounded-full shadow-lg">
               <Plus className="mr-2 h-6 w-6" />
               <span className="text-lg">Adicionar Cliente</span>
             </Button>
@@ -135,35 +153,17 @@ export default function Caderneta() {
             <div className="space-y-4 mt-4">
               <div>
                 <Label htmlFor="name">Nome *</Label>
-                <Input
-                  id="name"
-                  value={newClient.name}
-                  onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
-                  placeholder="Nome do cliente"
-                />
+                <Input id="name" value={newClient.name} onChange={(e) => setNewClient({ ...newClient, name: e.target.value })} placeholder="Nome do cliente" />
               </div>
               <div>
                 <Label htmlFor="phone">Telefone</Label>
-                <Input
-                  id="phone"
-                  value={newClient.phone}
-                  onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })}
-                  placeholder="(00) 00000-0000"
-                />
+                <Input id="phone" value={newClient.phone} onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })} placeholder="(00) 00000-0000" />
               </div>
               <div>
                 <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={newClient.email}
-                  onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
-                  placeholder="email@exemplo.com"
-                />
+                <Input id="email" type="email" value={newClient.email} onChange={(e) => setNewClient({ ...newClient, email: e.target.value })} placeholder="email@exemplo.com" />
               </div>
-              <Button onClick={handleAddClient} className="w-full">
-                Adicionar Cliente
-              </Button>
+              <Button onClick={handleAddClient} className="w-full">Adicionar Cliente</Button>
             </div>
           </DialogContent>
         </Dialog>

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Inbox } from "lucide-react";
-import { getCashFlowEntries, getSales, getExpenses } from "@/lib/storage";
+import { supabase } from "@/integrations/supabase/client";
 import { format, startOfMonth, endOfMonth, startOfDay, endOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -12,48 +12,66 @@ export default function FluxoCaixa() {
   const [period, setPeriod] = useState<"hoje" | "mes">("hoje");
   const [entradas, setEntradas] = useState(0);
   const [saidas, setSaidas] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     calculateCashFlow();
   }, [period]);
 
-  const calculateCashFlow = () => {
-    const now = new Date();
-    const sales = getSales();
-    const expenses = getExpenses();
-    
-    let startDate: Date;
-    let endDate: Date;
+  const calculateCashFlow = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    if (period === "hoje") {
-      startDate = startOfDay(now);
-      endDate = endOfDay(now);
-    } else {
-      startDate = startOfMonth(now);
-      endDate = endOfMonth(now);
+      const now = new Date();
+      let startDate: Date, endDate: Date;
+
+      if (period === "hoje") {
+        startDate = startOfDay(now);
+        endDate = endOfDay(now);
+      } else {
+        startDate = startOfMonth(now);
+        endDate = endOfMonth(now);
+      }
+
+      const [salesRes, expensesRes] = await Promise.all([
+        supabase
+          .from("sales")
+          .select("total")
+          .eq("user_id", user.id)
+          .eq("status", "completed")
+          .gte("date", startDate.toISOString())
+          .lte("date", endDate.toISOString()),
+        supabase
+          .from("expenses")
+          .select("amount")
+          .eq("user_id", user.id)
+          .eq("status", "paid")
+          .gte("created_at", startDate.toISOString())
+          .lte("created_at", endDate.toISOString()),
+      ]);
+
+      const totalEntradas = (salesRes.data || []).reduce((sum, s) => sum + Number(s.total), 0);
+      const totalSaidas = (expensesRes.data || []).reduce((sum, e) => sum + Number(e.amount), 0);
+
+      setEntradas(totalEntradas);
+      setSaidas(totalSaidas);
+    } catch (err) {
+      console.error("Erro ao calcular fluxo de caixa:", err);
+    } finally {
+      setLoading(false);
     }
-
-    // Calculate entradas (sales)
-    const totalEntradas = sales
-      .filter(sale => {
-        const saleDate = new Date(sale.date);
-        return saleDate >= startDate && saleDate <= endDate && sale.status === "completed";
-      })
-      .reduce((sum, sale) => sum + sale.total, 0);
-
-    // Calculate saidas (expenses paid)
-    const totalSaidas = expenses
-      .filter(expense => {
-        const expenseDate = new Date(expense.createdAt);
-        return expenseDate >= startDate && expenseDate <= endDate && expense.status === "paid";
-      })
-      .reduce((sum, expense) => sum + expense.amount, 0);
-
-    setEntradas(totalEntradas);
-    setSaidas(totalSaidas);
   };
 
   const saldoAtual = entradas - saidas;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -65,23 +83,14 @@ export default function FluxoCaixa() {
             </div>
             <span className="text-2xl font-bold">GESTUM</span>
           </div>
-          
           <h1 className="text-4xl font-bold mb-8">Fluxo de Caixa</h1>
 
           <div className="flex justify-center gap-4 mb-8">
-            <Button
-              variant={period === "hoje" ? "default" : "outline"}
-              onClick={() => setPeriod("hoje")}
-              className="rounded-full"
-            >
+            <Button variant={period === "hoje" ? "default" : "outline"} onClick={() => setPeriod("hoje")} className="rounded-full">
               <Inbox className="mr-2 h-4 w-4" />
               Hoje
             </Button>
-            <Button
-              variant={period === "mes" ? "secondary" : "outline"}
-              onClick={() => setPeriod("mes")}
-              className="rounded-full"
-            >
+            <Button variant={period === "mes" ? "secondary" : "outline"} onClick={() => setPeriod("mes")} className="rounded-full">
               Mês #{format(new Date(), "MMM", { locale: ptBR }).toUpperCase()}
             </Button>
           </div>
