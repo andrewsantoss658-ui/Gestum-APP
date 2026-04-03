@@ -32,7 +32,15 @@ import SuporteEquipes from "./pages/admin/SuporteEquipes";
 import SuporteRelatorios from "./pages/admin/SuporteRelatorios";
 import SuporteConfiguracoes from "./pages/admin/SuporteConfiguracoes";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutos de cache
+      retry: 2,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
