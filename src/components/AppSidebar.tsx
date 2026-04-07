@@ -90,11 +90,11 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center gap-3">
-          <img src={logoGestum} alt="GESTUM" className="w-10 h-10 rounded-lg shrink-0 object-contain" />
+          <img src={logoGestum} alt="GESTUM" className="w-10 h-10 rounded-xl shrink-0 object-contain shadow-sm" />
           {open && (
             <div>
-              <h1 className="text-xl font-bold text-foreground">GESTUM</h1>
-              <p className="text-xs text-muted-foreground">Sistema de Gestão</p>
+              <h1 className="text-lg font-bold tracking-tight text-foreground">GESTUM</h1>
+              <p className="text-[11px] text-muted-foreground font-medium">Sistema de Gestão</p>
             </div>
           )}
         </div>
