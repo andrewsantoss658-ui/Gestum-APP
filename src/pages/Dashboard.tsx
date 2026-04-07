@@ -4,7 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { hasCompletedOnboarding } from "@/lib/onboarding";
-import { ShoppingCart, Package, FileText, Plus, Users, Receipt, Wallet } from "lucide-react";
+import {
+  ShoppingCart,
+  Package,
+  FileText,
+  Plus,
+  Users,
+  Receipt,
+  Wallet,
+  TrendingUp,
+  ArrowUpRight,
+} from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -62,6 +72,8 @@ const Dashboard = () => {
     }
   };
 
+  const weekTotal = last7DaysSales.reduce((a, b) => a + b, 0);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -73,32 +85,52 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-        <Card className="bg-primary text-primary-foreground">
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">Vendas de Hoje</CardTitle>
+        {/* Hero card - Vendas de Hoje */}
+        <Card className="bg-gradient-primary text-primary-foreground border-0 overflow-hidden relative">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_hsl(211_100%_70%_/_0.3),_transparent_60%)]" />
+          <CardHeader className="relative z-10 pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-medium opacity-90">Vendas de Hoje</CardTitle>
+              <div className="icon-badge bg-white/15 text-white backdrop-blur-sm">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
-            <p className="text-4xl font-bold">R$ {todaySales.toFixed(2)}</p>
+          <CardContent className="relative z-10 pt-0">
+            <p className="stat-value text-4xl text-white">
+              R$ {todaySales.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </p>
+            <p className="text-sm opacity-75 mt-1">
+              Semana: R$ {weekTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </p>
           </CardContent>
         </Card>
 
-        <Card>
+        {/* Gráfico de barras - Últimos 7 dias */}
+        <Card className="card-elevated">
           <CardHeader>
-            <CardTitle>Últimos 7 dias</CardTitle>
+            <CardTitle className="text-lg">Últimos 7 dias</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-end justify-between h-40 gap-2">
               {last7DaysSales.map((value, index) => {
                 const maxValue = Math.max(...last7DaysSales, 1);
                 const height = (value / maxValue) * 100;
+                const dayLabels = ["D", "S", "T", "Q", "Q", "S", "S"];
+                const isToday = index === 6;
                 return (
                   <div key={index} className="flex-1 flex flex-col items-center gap-2">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {value > 0 ? `R$${value.toFixed(0)}` : ""}
+                    </span>
                     <div
-                      className="w-full bg-primary rounded-t transition-all"
-                      style={{ height: `${height || 5}%` }}
+                      className={`w-full rounded-lg transition-all duration-500 ${
+                        isToday ? "bg-gradient-primary" : "bg-primary/20"
+                      }`}
+                      style={{ height: `${Math.max(height, 6)}%` }}
                     />
-                    <span className="text-xs text-muted-foreground">
-                      {["D", "S", "T", "Q", "Q", "S", "S"][index]}
+                    <span className={`text-xs font-medium ${isToday ? "text-primary" : "text-muted-foreground"}`}>
+                      {dayLabels[index]}
                     </span>
                   </div>
                 );
@@ -107,44 +139,76 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Ações Rápidas</h2>
+        {/* Ações rápidas */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-foreground">Ações Rápidas</h2>
+
           <Button
-            size="xl"
-            className="w-full justify-start text-left h-auto py-6"
+            className="w-full justify-start text-left h-auto py-5 bg-gradient-primary border-0 shadow-[var(--shadow-primary)] hover:shadow-lg transition-all"
             onClick={() => navigate("/vendas/nova")}
           >
-            <Plus className="w-6 h-6 mr-3" />
+            <div className="bg-white/20 rounded-xl p-2.5 mr-4">
+              <Plus className="w-5 h-5" />
+            </div>
             <div>
               <p className="font-semibold text-base">Registrar Nova Venda</p>
-              <p className="text-sm opacity-90">Adicione uma venda ao sistema</p>
+              <p className="text-sm opacity-80 font-normal">Adicione uma venda ao sistema</p>
             </div>
+            <ArrowUpRight className="w-5 h-5 ml-auto opacity-60" />
           </Button>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Button variant="outline" size="lg" className="justify-start h-auto py-4" onClick={() => navigate("/estoque")}>
-              <Package className="w-5 h-5 mr-3" />
-              <span>Ver Estoque</span>
-            </Button>
-            <Button variant="outline" size="lg" className="justify-start h-auto py-4" onClick={() => navigate("/relatorios")}>
-              <FileText className="w-5 h-5 mr-3" />
-              <span>Ver Relatórios</span>
-            </Button>
+            <Card className="card-elevated cursor-pointer group" onClick={() => navigate("/estoque")}>
+              <CardContent className="flex items-center gap-4 py-4">
+                <div className="icon-badge-primary group-hover:scale-110 transition-transform">
+                  <Package className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-foreground">Ver Estoque</p>
+                  <p className="text-xs text-muted-foreground">Controle de produtos</p>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </CardContent>
+            </Card>
+            <Card className="card-elevated cursor-pointer group" onClick={() => navigate("/relatorios")}>
+              <CardContent className="flex items-center gap-4 py-4">
+                <div className="icon-badge-primary group-hover:scale-110 transition-transform">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-foreground">Ver Relatórios</p>
+                  <p className="text-xs text-muted-foreground">Análise detalhada</p>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </CardContent>
+            </Card>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
-            <Button variant="secondary" size="lg" className="justify-start h-auto py-4" onClick={() => navigate("/caderneta")}>
-              <Users className="w-5 h-5 mr-3" />
-              <span>Caderneta Digital</span>
-            </Button>
-            <Button variant="secondary" size="lg" className="justify-start h-auto py-4" onClick={() => navigate("/contas-pagar")}>
-              <Receipt className="w-5 h-5 mr-3" />
-              <span>Contas a Pagar</span>
-            </Button>
-            <Button variant="secondary" size="lg" className="justify-start h-auto py-4" onClick={() => navigate("/fluxo-caixa")}>
-              <Wallet className="w-5 h-5 mr-3" />
-              <span>Fluxo de Caixa</span>
-            </Button>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Card className="card-elevated cursor-pointer group" onClick={() => navigate("/caderneta")}>
+              <CardContent className="flex items-center gap-3 py-4">
+                <div className="icon-badge-success group-hover:scale-110 transition-transform">
+                  <Users className="w-5 h-5" />
+                </div>
+                <span className="font-medium text-foreground text-sm">Caderneta Digital</span>
+              </CardContent>
+            </Card>
+            <Card className="card-elevated cursor-pointer group" onClick={() => navigate("/contas-pagar")}>
+              <CardContent className="flex items-center gap-3 py-4">
+                <div className="icon-badge-warning group-hover:scale-110 transition-transform">
+                  <Receipt className="w-5 h-5" />
+                </div>
+                <span className="font-medium text-foreground text-sm">Contas a Pagar</span>
+              </CardContent>
+            </Card>
+            <Card className="card-elevated cursor-pointer group" onClick={() => navigate("/fluxo-caixa")}>
+              <CardContent className="flex items-center gap-3 py-4">
+                <div className="icon-badge-primary group-hover:scale-110 transition-transform">
+                  <Wallet className="w-5 h-5" />
+                </div>
+                <span className="font-medium text-foreground text-sm">Fluxo de Caixa</span>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </main>
