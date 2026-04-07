@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Bell, DollarSign, Users, AlertCircle } from "lucide-react";
+import { Bell, DollarSign, Users, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Notification {
@@ -105,10 +104,10 @@ export default function Notificacoes() {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case "pix": return <DollarSign className="h-5 w-5" />;
-      case "debt": return <Users className="h-5 w-5" />;
-      case "expense": return <AlertCircle className="h-5 w-5" />;
-      default: return <Bell className="h-5 w-5" />;
+      case "pix": return <div className="icon-badge-primary"><DollarSign className="h-5 w-5" /></div>;
+      case "debt": return <div className="icon-badge-warning"><Users className="h-5 w-5" /></div>;
+      case "expense": return <div className="icon-badge-danger"><AlertCircle className="h-5 w-5" /></div>;
+      default: return <div className="icon-badge-primary"><Bell className="h-5 w-5" /></div>;
     }
   };
 
@@ -123,68 +122,67 @@ export default function Notificacoes() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Carregando...</p>
+        <p className="text-muted-foreground animate-pulse">Carregando...</p>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate("/configuracoes")} className="mb-4">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar para Configurações
-        </Button>
-
-        <div className="flex items-center gap-3 mb-8">
-          <Bell className="h-8 w-8 text-primary" />
-          <h1 className="text-4xl font-bold">Notificações</h1>
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="icon-badge-primary">
+            <Bell className="h-5 w-5" />
+          </div>
+          <h1 className="text-3xl font-bold text-foreground">Notificações</h1>
         </div>
 
         {notifications.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Bell className="h-16 w-16 text-muted-foreground mb-4" />
-              <p className="text-xl font-medium text-muted-foreground">Nenhuma notificação pendente</p>
+          <Card className="card-elevated">
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <div className="w-20 h-20 rounded-2xl bg-muted flex items-center justify-center mb-5">
+                <Bell className="h-10 w-10 text-muted-foreground" />
+              </div>
+              <p className="text-xl font-semibold text-foreground">Nenhuma notificação</p>
               <p className="text-sm text-muted-foreground mt-2">Você está em dia com todos os compromissos!</p>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5" />
-                  {notifications.length} {notifications.length === 1 ? "Notificação" : "Notificações"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {notifications.map((notification, index) => (
-                  <div key={notification.id}>
-                    <div
-                      className="flex items-start gap-4 p-4 rounded-lg hover:bg-accent cursor-pointer transition-colors"
-                      onClick={() => handleNotificationClick(notification)}
-                    >
-                      <div className="flex-shrink-0 mt-1">{getIcon(notification.type)}</div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h3 className="font-semibold text-foreground">{notification.title}</h3>
-                          <Badge variant={getPriorityColor(notification.priority)}>
-                            {notification.priority === "high" ? "Urgente" : notification.priority === "medium" ? "Média" : "Baixa"}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-2">{notification.description}</p>
-                        {notification.amount !== undefined && (
-                          <p className="text-lg font-bold text-primary">R$ {notification.amount.toFixed(2)}</p>
-                        )}
+          <Card className="card-elevated">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                  {notifications.length}
+                </span>
+                {notifications.length === 1 ? "Notificação" : "Notificações"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              {notifications.map((notification, index) => (
+                <div key={notification.id}>
+                  <div
+                    className="flex items-start gap-4 p-4 rounded-xl hover:bg-accent/50 cursor-pointer transition-colors"
+                    onClick={() => handleNotificationClick(notification)}
+                  >
+                    <div className="flex-shrink-0 mt-0.5">{getIcon(notification.type)}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <h3 className="font-semibold text-foreground">{notification.title}</h3>
+                        <Badge variant={getPriorityColor(notification.priority)}>
+                          {notification.priority === "high" ? "Urgente" : notification.priority === "medium" ? "Média" : "Baixa"}
+                        </Badge>
                       </div>
+                      <p className="text-sm text-muted-foreground mb-2">{notification.description}</p>
+                      {notification.amount !== undefined && (
+                        <p className="text-lg font-bold text-primary">R$ {notification.amount.toFixed(2)}</p>
+                      )}
                     </div>
-                    {index < notifications.length - 1 && <Separator className="my-2" />}
                   </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
+                  {index < notifications.length - 1 && <Separator className="my-1" />}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>
