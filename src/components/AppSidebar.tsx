@@ -88,13 +88,22 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b p-4">
+      <SidebarHeader className="border-b border-sidebar-border/60 p-4">
         <div className="flex items-center gap-3">
-          <img src={logoGestum} alt="GESTUM" className="w-10 h-10 rounded-xl shrink-0 object-contain shadow-sm" />
+          <div className="relative shrink-0">
+            <div className="absolute inset-0 rounded-xl bg-gradient-primary opacity-30 blur-md" />
+            <img
+              src={logoGestum}
+              alt="GESTUM"
+              className="relative w-10 h-10 rounded-xl object-contain shadow-md"
+            />
+          </div>
           {open && (
-            <div>
-              <h1 className="text-lg font-bold tracking-tight text-foreground">GESTUM</h1>
-              <p className="text-[11px] text-muted-foreground font-medium">Sistema de Gestão</p>
+            <div className="min-w-0">
+              <h1 className="text-lg font-bold tracking-tight text-gradient-primary">GESTUM</h1>
+              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest">
+                Gestão MEI
+              </p>
             </div>
           )}
         </div>
