@@ -35,6 +35,14 @@ const ROUTE_LABELS: Record<string, string> = {
   "config-chat": "Config. Chat",
 };
 
+function getRouteAccent(pathname: string): "blue" | "green" | "amber" | "violet" | "rose" {
+  if (pathname.startsWith("/fluxo-caixa") || pathname.startsWith("/pix")) return "green";
+  if (pathname.startsWith("/contas-pagar") || pathname.startsWith("/notificacoes")) return "amber";
+  if (pathname.startsWith("/caderneta") || pathname.startsWith("/suporte")) return "violet";
+  if (pathname.startsWith("/relatorios") || pathname.startsWith("/nota-fiscal")) return "rose";
+  return "blue";
+}
+
 function Breadcrumbs() {
   const { pathname } = useLocation();
   const parts = pathname.split("/").filter(Boolean);
