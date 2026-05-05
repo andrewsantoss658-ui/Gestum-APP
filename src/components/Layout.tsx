@@ -81,7 +81,11 @@ export default function Layout({ children }: LayoutProps) {
               <ThemeToggle />
             </div>
           </header>
-          <main key={pathname} className="flex-1 animate-fade-in">
+          <main
+            key={pathname}
+            data-accent={getRouteAccent(pathname)}
+            className="flex-1 animate-fade-in page-bg-aurora route-accent"
+          >
             {children}
           </main>
         </div>
