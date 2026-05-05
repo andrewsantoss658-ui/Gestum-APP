@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { hasCompletedOnboarding } from "@/lib/onboarding";
+import PageShell from "@/components/PageShell";
 import {
   ShoppingCart,
   Package,
@@ -76,15 +77,27 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Carregando...</div>
-      </div>
+      <PageShell accent="blue" eyebrow="Visão Geral" title="Dashboard">
+        <div className="grid gap-4 stagger">
+          <div className="skeleton-shimmer h-40 w-full" />
+          <div className="skeleton-shimmer h-56 w-full" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="skeleton-shimmer h-24" />
+            <div className="skeleton-shimmer h-24" />
+          </div>
+        </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+    <PageShell
+      accent="blue"
+      eyebrow="Visão Geral"
+      title="Bom te ver de volta 👋"
+      subtitle="Acompanhe suas vendas, estoque e finanças num só lugar."
+    >
+      <div className="space-y-6 stagger">
         {/* Hero card - Vendas de Hoje */}
         <Card className="bg-gradient-primary text-primary-foreground border-0 overflow-hidden relative">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_hsl(211_100%_70%_/_0.3),_transparent_60%)]" />
@@ -211,8 +224,8 @@ const Dashboard = () => {
             </Card>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </PageShell>
   );
 };
 

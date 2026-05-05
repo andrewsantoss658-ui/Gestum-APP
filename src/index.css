@@ -98,6 +98,30 @@
 
   body {
     @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01", "ss03";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Tipografia mais editorial */
+  h1, h2, h3, h4 {
+    @apply tracking-tight;
+    letter-spacing: -0.02em;
+  }
+
+  /* Scrollbar refinada */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.35);
+    background-clip: padding-box;
+    border: 2px solid transparent;
   }
 }
 
@@ -156,5 +180,161 @@
   }
   .stat-label {
     @apply text-sm font-medium text-muted-foreground;
+  }
+
+  /* ==== Layouts dinâmicos por página ==== */
+
+  /* Container de página com entrada suave */
+  .page-shell {
+    @apply relative min-h-[calc(100vh-3rem)] animate-fade-in;
+  }
+
+  /* Fundo decorativo com blobs (fintech moderno) */
+  .page-bg-aurora {
+    position: relative;
+    overflow: hidden;
+  }
+  .page-bg-aurora::before,
+  .page-bg-aurora::after {
+    content: "";
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(80px);
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
+    animation: float 8s ease-in-out infinite;
+  }
+  .page-bg-aurora::before {
+    width: 360px; height: 360px;
+    top: -120px; right: -80px;
+    background: radial-gradient(circle, hsl(var(--primary) / 0.18), transparent 70%);
+  }
+  .page-bg-aurora::after {
+    width: 320px; height: 320px;
+    bottom: -120px; left: -60px;
+    background: radial-gradient(circle, hsl(var(--secondary) / 0.16), transparent 70%);
+    animation-delay: 2s;
+  }
+  .page-bg-aurora > * { position: relative; z-index: 1; }
+
+  /* Variantes temáticas — cada aba ganha um sotaque diferente */
+  .page-bg-mesh-blue::before { background: radial-gradient(circle, hsl(211 100% 50% / 0.22), transparent 70%); }
+  .page-bg-mesh-green::before { background: radial-gradient(circle, hsl(134 61% 41% / 0.22), transparent 70%); }
+  .page-bg-mesh-amber::before { background: radial-gradient(circle, hsl(35 95% 55% / 0.22), transparent 70%); }
+  .page-bg-mesh-violet::before { background: radial-gradient(circle, hsl(265 80% 60% / 0.22), transparent 70%); }
+  .page-bg-mesh-rose::before { background: radial-gradient(circle, hsl(340 80% 60% / 0.22), transparent 70%); }
+
+  /* Accent via data-attribute (aplicado pelo Layout) */
+  .route-accent[data-accent="blue"]::before { background: radial-gradient(circle, hsl(211 100% 50% / 0.18), transparent 70%); }
+  .route-accent[data-accent="green"]::before { background: radial-gradient(circle, hsl(134 61% 41% / 0.18), transparent 70%); }
+  .route-accent[data-accent="amber"]::before { background: radial-gradient(circle, hsl(35 95% 55% / 0.18), transparent 70%); }
+  .route-accent[data-accent="violet"]::before { background: radial-gradient(circle, hsl(265 80% 60% / 0.18), transparent 70%); }
+  .route-accent[data-accent="rose"]::before { background: radial-gradient(circle, hsl(340 80% 60% / 0.18), transparent 70%); }
+  .route-accent[data-accent="green"]::after { background: radial-gradient(circle, hsl(180 70% 45% / 0.16), transparent 70%); }
+  .route-accent[data-accent="amber"]::after { background: radial-gradient(circle, hsl(20 95% 55% / 0.16), transparent 70%); }
+  .route-accent[data-accent="violet"]::after { background: radial-gradient(circle, hsl(220 80% 60% / 0.16), transparent 70%); }
+  .route-accent[data-accent="rose"]::after { background: radial-gradient(circle, hsl(280 70% 60% / 0.16), transparent 70%); }
+
+  /* Header de página com gradiente sutil */
+  .page-header {
+    @apply relative rounded-2xl p-6 md:p-8 mb-6 overflow-hidden border border-border/50;
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--accent) / 0.4) 100%);
+    box-shadow: var(--shadow-card);
+  }
+  .page-header-eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2;
+  }
+  .page-header-title {
+    @apply text-2xl md:text-3xl font-bold text-foreground;
+    letter-spacing: -0.025em;
+  }
+  .page-header-subtitle {
+    @apply text-sm md:text-base text-muted-foreground mt-1.5 max-w-2xl;
+  }
+
+  /* Card glass / fintech */
+  .card-glass {
+    @apply rounded-2xl border border-border/60 bg-card/80 backdrop-blur-md;
+    box-shadow: var(--shadow-card);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .card-glass:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-elevated);
+    border-color: hsl(var(--primary) / 0.25);
+  }
+
+  /* Stat card moderno */
+  .stat-card {
+    @apply card-glass p-5 flex flex-col gap-2;
+  }
+  .stat-card-trend-up { @apply text-[hsl(134_61%_41%)]; }
+  .stat-card-trend-down { @apply text-destructive; }
+
+  /* Gradient text */
+  .text-gradient-primary {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Divisor com gradiente */
+  .divider-gradient {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(var(--border)), transparent);
+  }
+
+  /* Skeleton shimmer refinado */
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted-foreground) / 0.08) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    @apply animate-shimmer rounded-md;
+  }
+
+  /* Botão com brilho on hover */
+  .btn-glow {
+    @apply relative overflow-hidden;
+    transition: all 0.3s ease;
+  }
+  .btn-glow::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 30%, hsl(0 0% 100% / 0.18) 50%, transparent 70%);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+  }
+  .btn-glow:hover::after { transform: translateX(100%); }
+  .btn-glow:hover { box-shadow: var(--shadow-primary); }
+
+  /* Hover lift utilitário */
+  .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+  .hover-lift:hover { transform: translateY(-2px); box-shadow: var(--shadow-elevated); }
+
+  /* Stagger helpers */
+  .stagger > * { animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .stagger > *:nth-child(1) { animation-delay: 0.04s; }
+  .stagger > *:nth-child(2) { animation-delay: 0.08s; }
+  .stagger > *:nth-child(3) { animation-delay: 0.12s; }
+  .stagger > *:nth-child(4) { animation-delay: 0.16s; }
+  .stagger > *:nth-child(5) { animation-delay: 0.20s; }
+  .stagger > *:nth-child(6) { animation-delay: 0.24s; }
+  .stagger > *:nth-child(7) { animation-delay: 0.28s; }
+  .stagger > *:nth-child(8) { animation-delay: 0.32s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page-shell,
+    .stagger > *,
+    .page-bg-aurora::before,
+    .page-bg-aurora::after {
+      animation: none !important;
+    }
   }
 }
