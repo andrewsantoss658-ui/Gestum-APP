@@ -67,6 +67,12 @@ export default function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
   return (
     <SidebarProvider>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-md focus:bg-primary focus:text-primary-foreground focus:shadow-lg focus-visible:outline-none"
+      >
+        Pular para o conteúdo
+      </a>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
@@ -90,6 +96,8 @@ export default function Layout({ children }: LayoutProps) {
             </div>
           </header>
           <main
+            id="main-content"
+            tabIndex={-1}
             key={pathname}
             data-accent={getRouteAccent(pathname)}
             className="flex-1 animate-fade-in page-bg-aurora route-accent"
