@@ -65,6 +65,7 @@ import { useSupportAccounts, useSupportAuditLog, type SupportAccount } from "@/h
 /** Utilitário para datas relativas em português */
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import PageShell from "@/components/PageShell";
 
 
 // ============================
@@ -313,19 +314,12 @@ export default function GestaoSuporte() {
   // ============================
 
   return (
-    <div className="space-y-6">
-
-      {/* ── 6.1 — Cabeçalho com botão de criação ───────────── */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <ShieldCheck className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-3xl font-bold">Gestão de Suporte</h1>
-            <p className="text-muted-foreground">Gerencie contas e permissões do suporte ao vivo</p>
-          </div>
-        </div>
-
-        {/* Diálogo para criar nova conta */}
+    <PageShell
+      accent="violet"
+      eyebrow="Administração"
+      title="Gestão de Suporte"
+      subtitle="Gerencie contas e permissões do suporte ao vivo."
+      actions={
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
             <Button><UserPlus className="h-4 w-4 mr-2" />Nova Conta</Button>
