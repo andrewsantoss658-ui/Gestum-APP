@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import PageShell from "@/components/PageShell";
 
 interface Client {
   id: string;
@@ -96,17 +97,13 @@ export default function Caderneta() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
-            <BookOpen className="w-4 h-4" />
-            GESTUM
-          </div>
-          <h1 className="text-3xl font-bold text-foreground">Caderneta Digital</h1>
-        </div>
-
+    <PageShell
+      accent="violet"
+      eyebrow="Clientes"
+      title="Caderneta Digital"
+      subtitle="Gerencie clientes e saldos devedores em um só lugar."
+    >
+      <div className="space-y-6">
         {/* Busca */}
         <div className="relative">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -187,6 +184,6 @@ export default function Caderneta() {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </PageShell>
   );
 }

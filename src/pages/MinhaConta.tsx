@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import PageShell from "@/components/PageShell";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -156,14 +157,19 @@ export default function MinhaConta() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-3xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate("/configuracoes")} className="mb-4">
+    <PageShell
+      accent="blue"
+      eyebrow="Conta"
+      title="Minha Conta"
+      subtitle="Atualize seus dados pessoais, foto e senha."
+      actions={
+        <Button variant="outline" onClick={() => navigate("/configuracoes")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar para Configurações
+          Voltar
         </Button>
-        <h1 className="text-4xl font-bold mb-8">Minha Conta</h1>
-
+      }
+    >
+      <div className="max-w-3xl mx-auto">
         <Card className="mb-6">
           <CardHeader><CardTitle>Foto de Perfil</CardTitle></CardHeader>
           <CardContent className="flex items-center gap-6">
@@ -252,6 +258,6 @@ export default function MinhaConta() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </PageShell>
   );
 }

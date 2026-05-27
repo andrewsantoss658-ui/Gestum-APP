@@ -6,6 +6,7 @@ import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfMonth, endOfMonth, startOfDay, endOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import PageShell from "@/components/PageShell";
 
 export default function FluxoCaixa() {
   const navigate = useNavigate();
@@ -75,17 +76,13 @@ export default function FluxoCaixa() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium">
-            <Wallet className="w-4 h-4" />
-            GESTUM
-          </div>
-          <h1 className="text-3xl font-bold text-foreground">Fluxo de Caixa</h1>
-        </div>
-
+    <PageShell
+      accent="green"
+      eyebrow="Financeiro"
+      title="Fluxo de Caixa"
+      subtitle="Visão consolidada de entradas e saídas do seu negócio."
+    >
+      <div className="space-y-8">
         {/* Filtros */}
         <div className="flex justify-center gap-2">
           <Button
@@ -145,6 +142,6 @@ export default function FluxoCaixa() {
           </Card>
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }
