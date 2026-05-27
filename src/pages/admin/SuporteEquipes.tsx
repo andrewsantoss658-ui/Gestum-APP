@@ -359,7 +359,8 @@ export default function SuporteEquipes() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </div>
+    </PageShell>
   );
 }
 

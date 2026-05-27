@@ -32,6 +32,7 @@ import { BarChart3, Clock, MessageSquare, ArrowRightLeft, Tag, Download } from "
 
 /** Hook personalizado — métricas consolidadas do suporte */
 import { useSupportMetrics } from "@/hooks/useSupportAdvanced";
+import PageShell from "@/components/PageShell";
 
 /** Biblioteca para geração de PDF */
 import jsPDF from "jspdf";

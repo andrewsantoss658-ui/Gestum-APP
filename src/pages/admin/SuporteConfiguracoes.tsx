@@ -26,6 +26,7 @@
 
 /** Hook do React para estado local */
 import { useState } from "react";
+import PageShell from "@/components/PageShell";
 
 /** Componentes de UI do design system */
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
