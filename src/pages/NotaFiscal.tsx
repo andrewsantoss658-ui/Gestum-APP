@@ -985,8 +985,8 @@ const NotaFiscal = () => {
             )}
           </CardContent>
         </Card>
-      </main>
-    </div>
+      </div>
+    </PageShell>
   );
 };
 
