@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import PageShell from "@/components/PageShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -191,17 +192,19 @@ const NovaVenda = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-card border-b sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-xl font-bold">Nova Venda</h1>
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+    <PageShell
+      accent="green"
+      eyebrow="Venda"
+      title="Nova Venda"
+      subtitle="Monte o carrinho, escolha o pagamento e finalize em segundos."
+      actions={
+        <Button variant="outline" onClick={() => navigate("/dashboard")}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Voltar
+        </Button>
+      }
+    >
+      <div className="space-y-6">
         {/* Adicionar produto */}
         <Card>
           <CardHeader>
@@ -316,8 +319,8 @@ const NovaVenda = () => {
             </CardContent>
           </Card>
         )}
-      </main>
-    </div>
+      </div>
+    </PageShell>
   );
 };
 
