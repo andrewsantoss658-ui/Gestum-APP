@@ -579,18 +579,19 @@ const NotaFiscal = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-card border-b sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <FileText className="w-6 h-6 text-primary" />
-          <h1 className="text-xl font-bold">Nota Fiscal</h1>
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+    <PageShell
+      accent="rose"
+      eyebrow="Fiscal"
+      title="Nota Fiscal"
+      subtitle="Emita e consulte notas fiscais com dados validados."
+      actions={
+        <Button variant="outline" onClick={() => navigate("/dashboard")}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Voltar
+        </Button>
+      }
+    >
+      <div className="space-y-6">
         {/* Form de emissão */}
         <Card>
           <CardHeader>
