@@ -103,6 +103,29 @@
     text-rendering: optimizeLegibility;
   }
 
+  /* ===== Acessibilidade: foco visível global ===== */
+  :focus { outline: none; }
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: calc(var(--radius) - 4px);
+  }
+  /* Reforço para alvos interativos comuns */
+  a:focus-visible,
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  [role="link"]:focus-visible,
+  [role="menuitem"]:focus-visible,
+  [role="tab"]:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px hsl(var(--ring) / 0.18);
+  }
+
   /* Tipografia mais editorial */
   h1, h2, h3, h4 {
     @apply tracking-tight;
@@ -336,5 +359,24 @@
     .page-bg-aurora::after {
       animation: none !important;
     }
+  }
+}
+
+/* ===== Suporte global a prefers-reduced-motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+  .card-elevated:hover,
+  .card-glass:hover,
+  .hover-lift:hover {
+    transform: none !important;
   }
 }
