@@ -359,8 +359,9 @@ export default function GestaoSuporte() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
-
+      }
+    >
+      <div className="space-y-6">
       {/* ── 6.2 — Cards de KPIs ────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
@@ -503,7 +504,8 @@ export default function GestaoSuporte() {
 
       {/* ── 6.5 — Diálogo de auditoria ─────────────────────── */}
       <AuditDialog accountId={auditAccountId} onClose={() => setAuditAccountId(undefined)} />
-    </div>
+      </div>
+    </PageShell>
   );
 }
 
