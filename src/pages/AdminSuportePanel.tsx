@@ -634,7 +634,8 @@ export default function AdminSuportePanel() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </div>
+    </PageShell>
   );
 }
 
