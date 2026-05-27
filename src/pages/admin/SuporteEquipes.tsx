@@ -25,6 +25,7 @@
 
 /** Hook do React para estado local */
 import { useState } from "react";
+import PageShell from "@/components/PageShell";
 
 /** Componentes de UI do design system */
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -203,8 +204,9 @@ export default function SuporteEquipes() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
-
+      }
+    >
+      <div className="space-y-6">
       {/* ── 5.2 — Layout de duas colunas ───────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
