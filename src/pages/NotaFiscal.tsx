@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import QRCode from "qrcode";
+import PageShell from "@/components/PageShell";
 
 interface NotaItem {
   productId: string;

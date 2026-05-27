@@ -27,6 +27,7 @@
 
 /** Hooks do React para estado local e efeitos colaterais */
 import { useState, useEffect } from "react";
+import PageShell from "@/components/PageShell";
 
 /** Cliente do backend para consultas diretas (autenticação e atualizações pontuais) */
 import { supabase } from "@/integrations/supabase/client";
@@ -335,14 +336,8 @@ export default function AdminSuportePanel() {
   // ============================
 
   return (
-    <div className="space-y-6">
-
-      {/* ── 6.1 — Cabeçalho da página ──────────────────────── */}
-      <div className="flex items-center gap-3">
-        <MessageSquare className="h-8 w-8 text-primary" />
-        <h1 className="text-3xl font-bold">Painel de Suporte</h1>
-      </div>
-
+    <PageShell accent="violet" eyebrow="Atendimento" title="Painel de Suporte" subtitle="Gerencie conversas, tags e transferências em tempo real.">
+      <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* ── 6.2 — Lista lateral de conversas ─────────────── */}
