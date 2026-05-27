@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import PageShell from "@/components/PageShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -145,22 +146,19 @@ export default function Suporte() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/configuracoes")}
-          className="mb-4"
-        >
+    <PageShell
+      accent="violet"
+      eyebrow="Ajuda"
+      title="Suporte e Ajuda"
+      subtitle="FAQ e chat com nossa equipe de atendimento."
+      actions={
+        <Button variant="outline" onClick={() => navigate("/configuracoes")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar para Configurações
+          Voltar
         </Button>
-
-        <div className="flex items-center gap-3 mb-8">
-          <HelpCircle className="h-8 w-8 text-primary" />
-          <h1 className="text-4xl font-bold">Suporte e Ajuda</h1>
-        </div>
-
+      }
+    >
+      <>
         <Tabs defaultValue="faq" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="faq">
@@ -322,7 +320,7 @@ export default function Suporte() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
-    </div>
+      </>
+    </PageShell>
   );
 }

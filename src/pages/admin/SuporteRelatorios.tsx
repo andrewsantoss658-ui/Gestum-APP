@@ -32,6 +32,7 @@ import { BarChart3, Clock, MessageSquare, ArrowRightLeft, Tag, Download } from "
 
 /** Hook personalizado — métricas consolidadas do suporte */
 import { useSupportMetrics } from "@/hooks/useSupportAdvanced";
+import PageShell from "@/components/PageShell";
 
 /** Biblioteca para geração de PDF */
 import jsPDF from "jspdf";
@@ -142,22 +143,14 @@ export default function SuporteRelatorios() {
   // ============================
 
   return (
-    <div className="space-y-6">
-
-      {/* ── 5.1 — Cabeçalho com botão de exportação ────────── */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <BarChart3 className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-3xl font-bold">Relatórios de Suporte</h1>
-            <p className="text-muted-foreground">Métricas e indicadores de desempenho</p>
-          </div>
-        </div>
-        <Button onClick={exportPDF}>
-          <Download className="h-4 w-4 mr-2" />Exportar PDF
-        </Button>
-      </div>
-
+    <PageShell
+      accent="rose"
+      eyebrow="Administração"
+      title="Relatórios de Suporte"
+      subtitle="Métricas e indicadores de desempenho."
+      actions={<Button onClick={exportPDF}><Download className="h-4 w-4 mr-2" />Exportar PDF</Button>}
+    >
+      <div className="space-y-6">
       {/* ── 5.2 — Cards de KPIs ────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
 

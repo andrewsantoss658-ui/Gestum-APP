@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Plus, ArrowLeft, Trash2, Edit, Package, Search } from "lucide-react";
 import { toast } from "sonner";
 import InvoiceReader from "@/components/InvoiceReader";
+import PageShell from "@/components/PageShell";
 
 interface Product {
   id: string;
@@ -199,28 +200,24 @@ const Produtos = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-card border-b sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <Package className="w-6 h-6 text-primary" />
-            <h1 className="text-xl font-bold">Produtos</h1>
-          </div>
-          <div className="flex gap-2">
-            <InvoiceReader onProductsConfirmed={handleInvoiceProducts} />
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={() => {
-                  setEditingProduct(null);
-                  setFormData({ name: "", price: "", quantity: "", category: "" });
-                }}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Novo Produto
-                </Button>
-              </DialogTrigger>
+    <PageShell
+      accent="blue"
+      eyebrow="Catálogo"
+      title="Produtos"
+      subtitle="Cadastre, edite e organize seu portfólio de produtos."
+      actions={
+        <>
+          <InvoiceReader onProductsConfirmed={handleInvoiceProducts} />
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => {
+                setEditingProduct(null);
+                setFormData({ name: "", price: "", quantity: "", category: "" });
+              }}>
+                <Plus className="w-4 h-4 mr-2" />
+                Novo Produto
+              </Button>
+            </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
@@ -287,11 +284,10 @@ const Produtos = () => {
               </form>
             </DialogContent>
           </Dialog>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+        </>
+      }
+    >
+      <div className="space-y-6">
         {/* Filtros */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
@@ -380,8 +376,8 @@ const Produtos = () => {
             ))}
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </PageShell>
   );
 };
 

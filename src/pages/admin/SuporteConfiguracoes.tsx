@@ -26,6 +26,7 @@
 
 /** Hook do React para estado local */
 import { useState } from "react";
+import PageShell from "@/components/PageShell";
 
 /** Componentes de UI do design system */
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -186,17 +187,13 @@ export default function SuporteConfiguracoes() {
   // ============================
 
   return (
-    <div className="space-y-6">
-
-      {/* ── 5.1 — Cabeçalho da página ──────────────────────── */}
-      <div className="flex items-center gap-3">
-        <MessageSquareText className="h-8 w-8 text-primary" />
-        <div>
-          <h1 className="text-3xl font-bold">Configurações do Chat</h1>
-          <p className="text-muted-foreground">Tags e mensagens de boas-vindas</p>
-        </div>
-      </div>
-
+    <PageShell
+      accent="violet"
+      eyebrow="Administração"
+      title="Configurações do Chat"
+      subtitle="Tags e mensagens de boas-vindas."
+    >
+      <div className="space-y-6">
       {/* ── 5.2 — Seção de Tags (Etiquetas) ────────────────── */}
       <Card>
         <CardHeader>

@@ -5,6 +5,7 @@ import { User, Bell, HelpCircle, LogOut, Moon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import PageShell from "@/components/PageShell";
 
 export default function Configuracoes() {
   const navigate = useNavigate();
@@ -19,10 +20,13 @@ export default function Configuracoes() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <PageShell
+      accent="blue"
+      eyebrow="Preferências"
+      title="Configurações"
+      subtitle="Ajuste sua conta, notificações, tema e acesso ao suporte."
+    >
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-4xl font-bold text-center mb-12">Configurações</h1>
-
         <div className="space-y-4">
           <Card 
             className="cursor-pointer hover:bg-accent transition-colors"
@@ -83,6 +87,6 @@ export default function Configuracoes() {
           </Card>
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }

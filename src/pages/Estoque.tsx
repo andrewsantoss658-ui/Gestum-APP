@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, AlertTriangle, TrendingDown, Calendar } from "lucide-react";
+import PageShell from "@/components/PageShell";
 
 interface Product {
   id: string;
@@ -91,26 +92,22 @@ const Estoque = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-card border-b sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-xl font-bold">Controle de Estoque</h1>
-          </div>
-          <div className="flex gap-2">
-            <Button variant={showForecast ? "default" : "outline"} size="sm" onClick={() => setShowForecast(!showForecast)}>
-              <TrendingDown className="w-4 h-4 mr-2" />
-              Previsão
-            </Button>
-            <Button onClick={() => navigate("/produtos")}>Gerenciar Produtos</Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+    <PageShell
+      accent="blue"
+      eyebrow="Inventário"
+      title="Controle de Estoque"
+      subtitle="Monitore níveis, previsões e reabastecimentos."
+      actions={
+        <>
+          <Button variant={showForecast ? "default" : "outline"} size="sm" onClick={() => setShowForecast(!showForecast)}>
+            <TrendingDown className="w-4 h-4 mr-2" />
+            Previsão
+          </Button>
+          <Button onClick={() => navigate("/produtos")}>Gerenciar Produtos</Button>
+        </>
+      }
+    >
+      <div className="space-y-6">
         {lowStockProducts.length > 0 && (
           <Card className="border-warning bg-warning/5">
             <CardContent className="py-4">
@@ -193,8 +190,8 @@ const Estoque = () => {
             })}
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </PageShell>
   );
 };
 

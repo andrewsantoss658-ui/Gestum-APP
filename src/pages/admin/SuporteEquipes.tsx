@@ -25,6 +25,7 @@
 
 /** Hook do React para estado local */
 import { useState } from "react";
+import PageShell from "@/components/PageShell";
 
 /** Componentes de UI do design system */
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -172,19 +173,12 @@ export default function SuporteEquipes() {
   // ============================
 
   return (
-    <div className="space-y-6">
-
-      {/* ── 5.1 — Cabeçalho com botão de criação ───────────── */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Users className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-3xl font-bold">Equipes de Suporte</h1>
-            <p className="text-muted-foreground">Organize atendentes em equipes especializadas</p>
-          </div>
-        </div>
-
-        {/* Diálogo de criação de equipe */}
+    <PageShell
+      accent="violet"
+      eyebrow="Administração"
+      title="Equipes de Suporte"
+      subtitle="Organize atendentes em equipes especializadas."
+      actions={
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild>
             <Button><Plus className="h-4 w-4 mr-2" />Nova Equipe</Button>
@@ -210,8 +204,9 @@ export default function SuporteEquipes() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
-
+      }
+    >
+      <div className="space-y-6">
       {/* ── 5.2 — Layout de duas colunas ───────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -364,7 +359,8 @@ export default function SuporteEquipes() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </div>
+    </PageShell>
   );
 }
 

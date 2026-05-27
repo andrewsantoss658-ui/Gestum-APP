@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { differenceInDays, parseISO } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
+import PageShell from "@/components/PageShell";
 
 interface Expense {
   id: string;
@@ -215,16 +216,13 @@ export default function ContasPagar() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-primary font-bold text-xl">GE</span>
-            <span className="text-muted-foreground font-bold text-xl">STUM</span>
-          </div>
-          <h1 className="text-4xl font-bold">Contas a Pagar</h1>
-        </div>
-
+    <PageShell
+      accent="amber"
+      eyebrow="Financeiro"
+      title="Contas a Pagar"
+      subtitle="Acompanhe vencimentos, baixe pagamentos e mantenha o caixa em dia."
+    >
+      <>
         <Tabs defaultValue="pending" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-4">
             <TabsTrigger value="pending">Pendentes ({pendingExpenses.length})</TabsTrigger>
@@ -289,7 +287,7 @@ export default function ContasPagar() {
           <Plus className="mr-2 h-6 w-6" />
           <span className="text-lg">Registrar Despesa</span>
         </Button>
-      </div>
-    </div>
+      </>
+    </PageShell>
   );
 }

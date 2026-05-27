@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import PageShell from "@/components/PageShell";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -128,15 +129,13 @@ export default function Notificacoes() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center gap-3">
-          <div className="icon-badge-primary">
-            <Bell className="h-5 w-5" />
-          </div>
-          <h1 className="text-3xl font-bold text-foreground">Notificações</h1>
-        </div>
-
+    <PageShell
+      accent="amber"
+      eyebrow="Alertas"
+      title="Notificações"
+      subtitle="Centralizamos cobranças, vencimentos e avisos importantes."
+    >
+      <div className="space-y-6">
         {notifications.length === 0 ? (
           <Card className="card-elevated">
             <CardContent className="flex flex-col items-center justify-center py-16">
@@ -185,6 +184,6 @@ export default function Notificacoes() {
           </Card>
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }
